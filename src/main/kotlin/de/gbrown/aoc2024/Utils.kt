@@ -38,4 +38,6 @@ fun solve(
     }.also { println("Duration: $it") }
 }
 
+fun <T> Iterable<T>.withoutItemAt(index: Int): List<T> = filterIndexed { i, _ -> i != index }
+
 private fun Int.padded() = toString().padStart(2, '0')

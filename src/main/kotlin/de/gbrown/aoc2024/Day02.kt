@@ -7,19 +7,18 @@ import kotlin.math.sign
 
 object Day02 {
 
-    fun part1(input: List<String>): Int {
-        val reports = input.map { line ->
-            line.split(" ")
-                .filter { it.isNotBlank() }
-                .map { it.toInt() }
-        }
-        return reports.count { it.isSafe() }
-    }
+    fun part1(input: List<String>): Int = getReports(input).count { it.isSafeStrict() }
 
-    fun part2(input: List<String>): Int = TODO("Must process $input")
+    fun part2(input: List<String>): Int = getReports(input).count { it.isSafeStrict() || it.isSafeWithDampener() }
+
+    private fun getReports(input: List<String>) = input.map { line ->
+        line.split(" ")
+            .filter { it.isNotBlank() }
+            .map { it.toInt() }
+    }
 }
 
-private fun List<Int>.isSafe(): Boolean {
+private fun List<Int>.isSafeStrict(): Boolean {
     val monotony = mutableSetOf<Int>()
 
     this.forEachIndexed { index, value ->
@@ -36,6 +35,15 @@ private fun List<Int>.isSafe(): Boolean {
     return true
 }
 
+private fun List<Int>.isSafeWithDampener(): Boolean {
+    this.indices.forEach { index ->
+        val sublist = this.withoutItemAt(index)
+        if (sublist.isSafeStrict()) return true
+    }
+
+    return false
+}
+
 fun main() {
 
     val day = 2
@@ -45,6 +53,6 @@ fun main() {
     solve(day, Day02::part1)
 
     println("\nPart2:")
-    checkOnTestInput(day, 0, Day02::part2)
+    checkOnTestInput(day, 4, Day02::part2)
     solve(day, Day02::part2)
 }
