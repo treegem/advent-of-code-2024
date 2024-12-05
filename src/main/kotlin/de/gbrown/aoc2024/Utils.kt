@@ -1,7 +1,8 @@
-import java.math.BigInteger
-import java.security.MessageDigest
+package de.gbrown.aoc2024
+
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
+import kotlin.time.measureTime
 
 /**
  * Reads lines from the given input txt file.
@@ -9,13 +10,32 @@ import kotlin.io.path.readLines
 fun readInput(name: String) = Path("src/main/resources/$name.txt").readLines()
 
 /**
- * Converts string to md5 hash.
+ * Checks the solution for the TestInputs.
  */
-fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
-    .toString(16)
-    .padStart(32, '0')
+fun checkOnTestInput(
+    day: Int,
+    expectedSolution: Int,
+    solution: (List<String>) -> Int,
+) {
+    val testInput = readInput("Day${day.padded()}_test")
+    val part1Test = solution(testInput)
+    check(part1Test == expectedSolution) { "Test failed: got $part1Test, expected $expectedSolution" }
+    println("Test passed.")
+}
 
 /**
- * The cleaner shorthand for printing output.
+ * Performs the solution for the given day.
  */
-fun Any?.println() = println(this)
+fun solve(
+    day: Int,
+    solution: (List<String>) -> Int,
+) {
+    val input = readInput("Day${day.padded()}")
+
+    measureTime {
+        solution(input)
+            .also { println("Solution: $it") }
+    }.also { println("Duration: $it") }
+}
+
+private fun Int.padded() = toString().padStart(2, '0')

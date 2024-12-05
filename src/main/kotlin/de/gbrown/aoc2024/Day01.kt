@@ -1,47 +1,44 @@
 @file:Suppress("MagicNumber")
 
-import Day01.part1
-import Day01.part2
+package de.gbrown.aoc2024
+
+import kotlin.math.abs
 
 object Day01 {
 
-    private val wordsToNumberStrings = mapOf(
-        "one" to "1",
-        "two" to "2",
-        "three" to "3",
-        "four" to "4",
-        "five" to "5",
-        "six" to "6",
-        "seven" to "7",
-        "eight" to "8",
-        "nine" to "9",
-    )
+    private fun splitLeftAndRight(input: List<String>): Pair<MutableList<Int>, MutableList<Int>> {
+        val leftList = mutableListOf<Int>()
+        val rightList = mutableListOf<Int>()
 
-    private val encodingStrings = wordsToNumberStrings.keys + wordsToNumberStrings.values
-
-    fun part1(input: List<String>): Int =
-        input.map { line -> listOf(line.first { it.isDigit() }, line.last { it.isDigit() }) }
-            .map { it.joinToString(separator = "") }
-            .sumOf { it.toInt() }
-
-    fun part2(input: List<String>): Int =
-        input.map { line ->
-            listOf(line.findAnyOf(encodingStrings)!!.second, line.findLastAnyOf(encodingStrings)!!.second)
+        input.forEach { line ->
+            val values = line.split(" ").filter { it.isNotBlank() }
+            leftList.add(values[0].toInt())
+            rightList.add(values[1].toInt())
         }
-            .map { firstLastPair -> firstLastPair.map { wordsToNumberStrings[it] ?: it } }
-            .map { it.joinToString(separator = "") }
-            .sumOf { it.toInt() }
+        return Pair(leftList, rightList)
+    }
+
+    fun part1(input: List<String>): Int {
+        val (leftList, rightList) = splitLeftAndRight(input)
+        return leftList.sorted()
+            .zip(rightList.sorted())
+            .sumOf { (left, right) ->
+                abs(left - right)
+            }
+    }
+
+    fun part2(input: List<String>): Int = input.size
 }
 
 fun main() {
 
-    val testInputPart1 = readInput("Day01_test_part1")
-    check(part1(testInputPart1).also(::println) == 142)
+    val day = 1
 
-    val testInputPart2 = readInput("Day01_test_part2")
-    check(part2(testInputPart2).also(::println) == 281)
+    println("\nPart 1:")
+    checkOnTestInput(day, 11, Day01::part1)
+    solve(day, Day01::part1)
 
-    val input = readInput("Day01")
-    part1(input).println()
-    part2(input).println()
+    println("\nPart2:")
+    checkOnTestInput(day, 31, Day01::part2)
+    solve(day, Day01::part2)
 }
