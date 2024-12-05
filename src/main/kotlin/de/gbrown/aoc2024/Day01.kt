@@ -27,7 +27,13 @@ object Day01 {
             }
     }
 
-    fun part2(input: List<String>): Int = input.size
+    fun part2(input: List<String>): Int {
+        val (leftList, rightList) = splitLeftAndRight(input)
+
+        return leftList.sumOf { leftValue ->
+            leftValue * rightList.count { it == leftValue }
+        }
+    }
 }
 
 fun main() {
