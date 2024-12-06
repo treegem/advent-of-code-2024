@@ -6,16 +6,37 @@ object Day04 {
 
     fun part1(input: List<String>): Int {
 
-        val xPositions = input.mapIndexed { lineIndex, line ->
-            line.mapIndexedNotNull { charIndex, char ->
-                if (char == 'X') Pair(lineIndex, charIndex) else null
-            }
-        }.flatten()
+        val xPositions = findAllPositionsOf('X', input)
 
         return countAllXmas(xPositions, input)
     }
 
-    fun part2(input: List<String>): Int = TODO("Must process $input")
+    fun part2(input: List<String>): Int {
+
+        val aPositions = findAllPositionsOf('A', input)
+
+        return countAllMasX(aPositions, input)
+    }
+
+    private fun countAllMasX(aPositions: List<Pair<Int, Int>>, input: List<String>) =
+        aPositions.mapNotNull { (y, x) ->
+            val smSet = listOf('M', 'S')
+            val charDownLeft = input.findCharInDirection(x, y, Direction.DOWN_LEFT)
+            val charUpRight = input.findCharInDirection(x, y, Direction.UP_RIGHT)
+            val charDownRight = input.findCharInDirection(x, y, Direction.DOWN_RIGHT)
+            val charUpLeft = input.findCharInDirection(x, y, Direction.UP_LEFT)
+            if (charDownLeft in smSet && charUpRight == (smSet - charDownLeft).single() &&
+                charUpLeft in smSet && charDownRight == (smSet - charUpLeft).single()
+            ) {
+                1
+            } else null
+        }.count()
+
+    private fun findAllPositionsOf(target: Char, input: List<String>) = input.mapIndexed { lineIndex, line ->
+        line.mapIndexedNotNull { charIndex, char ->
+            if (char == target) Pair(lineIndex, charIndex) else null
+        }
+    }.flatten()
 
     private fun countAllXmas(
         xPositions: List<Pair<Int, Int>>,
@@ -64,6 +85,6 @@ fun main() {
     solve(day, Day04::part1)
 
     println("\nPart2:")
-    checkOnTestInput(day, 0, Day04::part2)
+    checkOnTestInput(day, 9, Day04::part2)
     solve(day, Day04::part2)
 }
