@@ -16,8 +16,9 @@ fun checkOnTestInput(
     day: Int,
     expectedSolution: Int,
     solution: (List<String>) -> Int,
+    suffix: String = ""
 ) {
-    val testInput = readInput("Day${day.padded()}_test")
+    val testInput = readInput("Day${day.padded()}${suffix}_test")
     val part1Test = solution(testInput)
     check(part1Test == expectedSolution) { "Test failed: got $part1Test, expected $expectedSolution" }
     println("Test passed.")
