@@ -16,7 +16,7 @@ fun checkOnTestInput(
     day: Int,
     expectedSolution: Int,
     solution: (List<String>) -> Int,
-    suffix: String = ""
+    suffix: String = "",
 ) {
     val testInput = readInput("Day${day.padded()}${suffix}_test")
     val part1Test = solution(testInput)
@@ -40,5 +40,15 @@ fun solve(
 }
 
 fun <T> Iterable<T>.withoutItemAt(index: Int): List<T> = filterIndexed { i, _ -> i != index }
+
+fun <T> List<T>.swapped(value1: T, value2: T): List<T> {
+    val copy = this.toMutableList()
+    val value1Index = this.indexOf(value1)
+    val value2Index = this.indexOf(value2)
+    val temp = copy[value1Index]
+    copy[value1Index] = copy[value2Index]
+    copy[value2Index] = temp
+    return copy.toList()
+}
 
 private fun Int.padded() = toString().padStart(2, '0')
