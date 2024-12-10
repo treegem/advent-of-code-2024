@@ -2,7 +2,7 @@ package de.gbrown.aoc2024
 
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
-import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 
 /**
  * Reads lines from the given input txt file.
@@ -14,8 +14,8 @@ fun readInput(name: String) = Path("src/main/resources/$name.txt").readLines()
  */
 fun checkOnTestInput(
     day: Int,
-    expectedSolution: Int,
-    solution: (List<String>) -> Int,
+    expectedSolution: Number,
+    solution: (List<String>) -> Number,
     suffix: String = "",
 ) {
     val testInput = readInput("Day${day.toPaddedString()}${suffix}_test")
@@ -29,14 +29,16 @@ fun checkOnTestInput(
  */
 fun solve(
     day: Int,
-    solution: (List<String>) -> Int,
+    solution: (List<String>) -> Number,
 ) {
     val input = readInput("Day${day.toPaddedString()}")
 
-    measureTime {
+    measureTimedValue {
         solution(input)
-            .also { println("Solution: $it") }
-    }.also { println("Duration: $it") }
+    }.also {
+        println("Solution: ${it.value}")
+        println("Duration: ${it.duration}")
+    }
 }
 
 fun <T> Iterable<T>.withoutItemAt(index: Int): List<T> = filterIndexed { i, _ -> i != index }
