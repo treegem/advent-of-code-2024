@@ -18,23 +18,23 @@ object Day06 {
         val (initialX: Int, initialY: Int, initialDirection: Direction) = getStart(matrix)
 
         return visited.count { position ->
-            val startingConditions = Pair(Pair(initialX, initialY), initialDirection)
+            val startingConditions = Pair(Position(initialX, initialY), initialDirection)
             matrix.withBlockAt(position).containsLoop(startingConditions)
         }
     }
 
-    private fun List<List<Char>>.withBlockAt(position: Pair<Int, Int>): List<List<Char>> {
+    private fun List<List<Char>>.withBlockAt(position: Position): List<List<Char>> {
         val copy = this.map { it.toMutableList() }.toMutableList()
-        copy[position.second][position.first] = '#'
+        copy[position.y][position.x] = '#'
         return copy.map { it.toList() }.toList()
     }
 
     private fun getAllVisitedPositions(
         matrix: List<List<Char>>,
-    ): MutableSet<Pair<Int, Int>> {
+    ): MutableSet<Position> {
         val (initialX: Int, initialY: Int, initialDirection: Direction) = getStart(matrix)
-        val visited = mutableSetOf<Pair<Int, Int>>()
-        var currentPosition = Pair(initialX, initialY)
+        val visited = mutableSetOf<Position>()
+        var currentPosition = Position(initialX, initialY)
         var currentDirection = initialDirection
         while (matrix.findValueAt(currentPosition) != null) {
             visited.add(currentPosition)
@@ -68,8 +68,8 @@ object Day06 {
         }.flatten().single()
     }
 
-    private fun List<List<Char>>.containsLoop(startingConditions: Pair<Pair<Int, Int>, Direction>): Boolean {
-        val visited = mutableSetOf<Pair<Pair<Int, Int>, Direction>>()
+    private fun List<List<Char>>.containsLoop(startingConditions: Pair<Position, Direction>): Boolean {
+        val visited = mutableSetOf<Pair<Position, Direction>>()
         var current = startingConditions
         while (this.findValueAt(current.first) != null) {
             if (visited.contains(current)) return true

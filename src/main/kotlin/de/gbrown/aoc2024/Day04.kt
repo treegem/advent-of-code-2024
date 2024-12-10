@@ -18,13 +18,13 @@ object Day04 {
         return countAllMasX(aPositions, input.to2dCharsListMatrix())
     }
 
-    private fun countAllMasX(aPositions: List<Pair<Int, Int>>, input: List<List<Char>>) =
-        aPositions.mapNotNull { (y, x) ->
+    private fun countAllMasX(aPositions: List<Position>, input: List<List<Char>>) =
+        aPositions.mapNotNull { aPosition ->
             val smSet = listOf('M', 'S')
-            val charDownLeft = input.findValueInDirection(x, y, Direction.DOWN_LEFT)
-            val charUpRight = input.findValueInDirection(x, y, Direction.UP_RIGHT)
-            val charDownRight = input.findValueInDirection(x, y, Direction.DOWN_RIGHT)
-            val charUpLeft = input.findValueInDirection(x, y, Direction.UP_LEFT)
+            val charDownLeft = input.findValueInDirection(aPosition, Direction.DOWN_LEFT)
+            val charUpRight = input.findValueInDirection(aPosition, Direction.UP_RIGHT)
+            val charDownRight = input.findValueInDirection(aPosition, Direction.DOWN_RIGHT)
+            val charUpLeft = input.findValueInDirection(aPosition, Direction.UP_LEFT)
             if (charDownLeft in smSet && charUpRight == (smSet - charDownLeft).single() &&
                 charUpLeft in smSet && charDownRight == (smSet - charUpLeft).single()
             ) {
@@ -34,18 +34,18 @@ object Day04 {
 
     private fun findAllPositionsOf(target: Char, input: List<String>) = input.mapIndexed { y, line ->
         line.mapIndexedNotNull { x, char ->
-            if (char == target) Pair(y, x) else null
+            if (char == target) Position(x, y) else null
         }
     }.flatten()
 
     private fun countAllXmas(
-        xPositions: List<Pair<Int, Int>>,
+        xPositions: List<Position>,
         input: List<List<Char>>,
-    ) = xPositions.sumOf { (y, x) ->
+    ) = xPositions.sumOf { xPosition ->
         Direction.entries.mapNotNull { direction ->
-            if (input.findValueInDirection(x, y, direction, 1) == 'M' &&
-                input.findValueInDirection(x, y, direction, 2) == 'A' &&
-                input.findValueInDirection(x, y, direction, 3) == 'S'
+            if (input.findValueInDirection(xPosition, direction, 1) == 'M' &&
+                input.findValueInDirection(xPosition, direction, 2) == 'A' &&
+                input.findValueInDirection(xPosition, direction, 3) == 'S'
             ) {
                 1
             } else null
