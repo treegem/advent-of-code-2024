@@ -4,7 +4,7 @@ package de.gbrown.aoc2024
 
 import de.gbrown.aoc2024.util.checkOnTestInput
 import de.gbrown.aoc2024.util.solve
-import de.gbrown.aoc2024.util.swapped
+import de.gbrown.aoc2024.util.swappedByValue
 
 object Day05 {
 
@@ -44,7 +44,7 @@ object Day05 {
         while (rules.any { it.isBrokenBy(newPage) }) {
             rules.forEach { rule ->
                 if (rule.isBrokenBy(newPage)) {
-                    newPage = PrintPage(newPage.numbers.swapped(rule.left, rule.right))
+                    newPage = PrintPage(newPage.numbers.swappedByValue(rule.left, rule.right))
                 }
             }
         }
