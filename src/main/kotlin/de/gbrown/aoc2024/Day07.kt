@@ -2,6 +2,9 @@
 
 package de.gbrown.aoc2024
 
+import de.gbrown.aoc2024.util.checkOnTestInput
+import de.gbrown.aoc2024.util.solve
+
 object Day07 {
 
     fun part1(input: List<String>) = solveWithOperations(input, listOf(::addition, ::multiplication))

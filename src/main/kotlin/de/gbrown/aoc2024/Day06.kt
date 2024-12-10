@@ -2,6 +2,13 @@
 
 package de.gbrown.aoc2024
 
+import de.gbrown.aoc2024.util.Direction
+import de.gbrown.aoc2024.util.Position
+import de.gbrown.aoc2024.util.checkOnTestInput
+import de.gbrown.aoc2024.util.findValueAt
+import de.gbrown.aoc2024.util.solve
+import de.gbrown.aoc2024.util.to2dCharsListMatrix
+
 object Day06 {
 
     fun part1(input: List<String>): Int {
@@ -38,10 +45,10 @@ object Day06 {
         var currentDirection = initialDirection
         while (matrix.findValueAt(currentPosition) != null) {
             visited.add(currentPosition)
-            while (matrix.findValueAt(currentPosition.move(currentDirection)) == '#') {
+            while (matrix.findValueAt(currentPosition.moved(currentDirection)) == '#') {
                 currentDirection = currentDirection.turnRight()
             }
-            currentPosition = currentPosition.move(currentDirection)
+            currentPosition = currentPosition.moved(currentDirection)
         }
         return visited
     }
@@ -75,10 +82,10 @@ object Day06 {
             if (visited.contains(current)) return true
             visited.add(current)
             var currentDirection = current.second
-            while (this.findValueAt(current.first.move(currentDirection)) == '#') {
+            while (this.findValueAt(current.first.moved(currentDirection)) == '#') {
                 currentDirection = currentDirection.turnRight()
             }
-            current = Pair(current.first.move(currentDirection), currentDirection)
+            current = Pair(current.first.moved(currentDirection), currentDirection)
         }
         return false
     }

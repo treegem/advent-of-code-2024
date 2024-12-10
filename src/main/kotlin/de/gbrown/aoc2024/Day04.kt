@@ -2,6 +2,13 @@
 
 package de.gbrown.aoc2024
 
+import de.gbrown.aoc2024.util.Direction
+import de.gbrown.aoc2024.util.Position
+import de.gbrown.aoc2024.util.checkOnTestInput
+import de.gbrown.aoc2024.util.findValueInDirection
+import de.gbrown.aoc2024.util.solve
+import de.gbrown.aoc2024.util.to2dCharsListMatrix
+
 object Day04 {
 
     fun part1(input: List<String>): Int {

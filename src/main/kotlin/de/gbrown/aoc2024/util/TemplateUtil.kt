@@ -1,4 +1,4 @@
-package de.gbrown.aoc2024
+package de.gbrown.aoc2024.util
 
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
