@@ -22,3 +22,10 @@ fun <T> List<List<T>>.findValueInDirection(
     steps: Int = 1,
 ): T? = findValueAt(startingPosition.moved(direction, steps))
 
+fun <T> List<List<T>>.findAllPositionsByPredicate(predicate: (T) -> Boolean): List<Position> =
+    mapIndexed { y, line ->
+        line.mapIndexedNotNull { x, value ->
+            if (predicate(value)) Position(x, y) else null
+        }
+    }.flatten()
+

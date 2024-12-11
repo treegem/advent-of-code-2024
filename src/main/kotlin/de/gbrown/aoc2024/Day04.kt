@@ -5,6 +5,7 @@ package de.gbrown.aoc2024
 import de.gbrown.aoc2024.util.Direction
 import de.gbrown.aoc2024.util.Position
 import de.gbrown.aoc2024.util.checkOnTestInput
+import de.gbrown.aoc2024.util.findAllPositionsByPredicate
 import de.gbrown.aoc2024.util.findValueInDirection
 import de.gbrown.aoc2024.util.solve
 import de.gbrown.aoc2024.util.to2dCharsListMatrix
@@ -13,14 +14,14 @@ object Day04 {
 
     fun part1(input: List<String>): Int {
 
-        val xPositions = findAllPositionsOf('X', input)
+        val xPositions = input.to2dCharsListMatrix().findAllPositionsByPredicate { it == 'X' }
 
         return countAllXmas(xPositions, input.to2dCharsListMatrix())
     }
 
     fun part2(input: List<String>): Int {
 
-        val aPositions = findAllPositionsOf('A', input)
+        val aPositions = input.to2dCharsListMatrix().findAllPositionsByPredicate { it == 'A' }
 
         return countAllMasX(aPositions, input.to2dCharsListMatrix())
     }
@@ -38,12 +39,6 @@ object Day04 {
                 1
             } else null
         }.count()
-
-    private fun findAllPositionsOf(target: Char, input: List<String>) = input.mapIndexed { y, line ->
-        line.mapIndexedNotNull { x, char ->
-            if (char == target) Position(x, y) else null
-        }
-    }.flatten()
 
     private fun countAllXmas(
         xPositions: List<Position>,
