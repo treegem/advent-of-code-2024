@@ -15,17 +15,13 @@ object Day11 {
         return stones.count()
     }
 
-    fun part2(input: List<String>): Int {
-        var stones = input.first().split(" ").map { it.toLong() }
+    fun part2(input: List<String>): Long {
+        val stones = input.first().split(" ").map { it.toLong() }
+        val memory = mutableMapOf<Pair<Long, Int>, Long>()
 
-        repeat(75) { counter ->
-            if (counter % 5 == 0) {
-                println(counter)
-            }
-            stones = blink(stones)
+        return stones.sumOf { stone ->
+            blinkWithMemory(stone, memory, 75)
         }
-
-        return stones.count()
     }
 
     private fun addSplitStones(newStones: MutableList<Long>, stone: Long) {
@@ -46,6 +42,23 @@ object Day11 {
         }
         return newStones
     }
+
+    private fun blinkWithMemory(
+        stone: Long,
+        memory: MutableMap<Pair<Long, Int>, Long>,
+        iterationsLeft: Int,
+    ): Long =
+        when {
+            memory.containsKey(Pair(stone, iterationsLeft)) -> memory.getValue(Pair(stone, iterationsLeft))
+
+            iterationsLeft == 0 -> 1
+
+            else -> {
+                blink(listOf(stone))
+                    .sumOf { blinkWithMemory(it, memory, iterationsLeft - 1) }
+                    .also { memory.putIfAbsent(Pair(stone, iterationsLeft), it) }
+            }
+        }
 }
 
 fun main() {
@@ -57,6 +70,5 @@ fun main() {
     solve(day, Day11::part1)
 
     println("\nPart2:")
-    checkOnTestInput(day, 0, Day11::part2)
     solve(day, Day11::part2)
 }
