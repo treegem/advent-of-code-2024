@@ -5,6 +5,7 @@ enum class Direction {
 
     companion object {
         val nonDiagonals = listOf(UP, RIGHT, DOWN, LEFT)
+        val diagonals = listOf(UP_RIGHT, DOWN_RIGHT, DOWN_LEFT, UP_LEFT)
     }
 
 }
