@@ -12,8 +12,6 @@ import de.gbrown.aoc2024.util.to2dCharsListMatrix
 
 object Day10 {
 
-    private val relevantDirections = listOf(Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT)
-
     fun part1(input: List<String>): Int {
         val intMatrix = input.to2dIntMatrix()
 
@@ -59,7 +57,7 @@ object Day10 {
     ): MutableList<Position> {
         val newHeightPositions = mutableListOf<Position>()
         currentHeightPositions.forEach { position ->
-            relevantDirections.forEach { direction ->
+            Direction.nonDiagonals.forEach { direction ->
                 if (intMatrix.findValueInDirection(position, direction) == height) {
                     newHeightPositions.add(position.moved(direction))
                 }
