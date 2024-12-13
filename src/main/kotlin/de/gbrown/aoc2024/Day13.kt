@@ -4,15 +4,16 @@ package de.gbrown.aoc2024
 
 import de.gbrown.aoc2024.util.checkOnTestInput
 import de.gbrown.aoc2024.util.solve
-import org.jetbrains.kotlinx.multik.api.linalg.dot
+import org.jetbrains.kotlinx.multik.api.linalg.solve
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2Array
 import org.jetbrains.kotlinx.multik.ndarray.data.NDArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
-import kotlin.math.max
-import kotlin.math.min
+import org.jetbrains.kotlinx.multik.ndarray.operations.all
+import kotlin.math.abs
+import kotlin.math.roundToLong
 
 typealias Matrix = D2Array<Long>
 typealias ColumnVector = NDArray<Long, D1>
@@ -35,19 +36,16 @@ object Day13 {
                 .map { it.toMachineInformation() }
                 .map { it.withShiftedPrize() }
 
-        return machineInformation.mapIndexed { index, it ->
-            println("Machine $index")
-            calculateMinimumTokens(it)
-        }.sum()
+        return machineInformation.sumOf { calculateMinimumTokens(it) }
     }
 
     private fun calculateMinimumTokens(machineInformation: MachineInformation): Long {
         val matrix = createMatrixFrom(machineInformation)
         val resultVector = createResultFrom(machineInformation)
 
-        val solutions: List<Pair<Long, Long>> = matrix.solve(resultVector)
+        val wholeNumberSolution = matrix.findWholeNumberSolution(resultVector)
 
-        return solutions.minOfOrNull { (a, b) -> a * 3 + b } ?: 0
+        return wholeNumberSolution.let { (a, b) -> a * 3 + b }
     }
 
     private fun createMatrixFrom(machineInformation: MachineInformation): Matrix =
@@ -61,37 +59,12 @@ object Day13 {
     private fun createResultFrom(machineInformation: MachineInformation): ColumnVector =
         mk.ndarray(mk[machineInformation.prizeX, machineInformation.prizeY]).transpose()
 
-    private fun Matrix.solve(resultVector: ColumnVector): List<Pair<Long, Long>> {
-        val maxA = min(resultVector[0] / this[0, 0], resultVector[1] / this[1, 0])
-        val maxB = min(resultVector[0] / this[0, 1], resultVector[1] / this[1, 1])
-
-        val solutions = mutableListOf<Pair<Long, Long>>()
-
-        (0..maxA).forEach { a ->
-            (minB(a, resultVector, this)..maxB).forEach { b ->
-                if (this.dot(mk.ndarray(mk[a, b])) == resultVector) {
-                    solutions.add(a to b)
-                }
-            }
+    private fun Matrix.findWholeNumberSolution(resultVector: ColumnVector): Pair<Long, Long> {
+        val solutionCandidate = mk.linalg.solve(this, resultVector)
+        return when {
+            solutionCandidate.containsOnlyWholeNumbers() -> solutionCandidate[0].roundToLong() to solutionCandidate[1].roundToLong()
+            else -> Pair(0, 0)
         }
-
-        return solutions.toList().also {
-            println(
-                "best solution: ${
-                    it.map { (a, b) -> listOf(a, b) to a * 3 + b }.minByOrNull { it.second }?.first
-                }"
-            )
-        }
-    }
-
-    private fun minB(a: Long, resultVector: ColumnVector, matrix: Matrix): Long {
-        val aX = matrix[0, 0] * a
-        val ay = matrix[1, 0] * a
-
-        val missingBsByX = (resultVector[0] - aX) / matrix[0, 1]
-        val missingBsByY = (resultVector[1] - ay) / matrix[1, 1]
-
-        return max(missingBsByX, missingBsByY)
     }
 
     private fun List<String>.toMachineInformation(): MachineInformation {
@@ -108,6 +81,8 @@ object Day13 {
 
         return MachineInformation(buttonAX, buttonAY, buttonBX, buttonBY, prizeX, prizeY)
     }
+
+    private fun NDArray<Double, D1>.containsOnlyWholeNumbers(): Boolean = this.all { abs(it.roundToLong() - it) < 1e-3 }
 }
 
 private data class MachineInformation(
