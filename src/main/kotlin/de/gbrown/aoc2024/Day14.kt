@@ -32,7 +32,7 @@ object Day14 {
         file.writeText("")
         repeat(10000) { iteration ->
             if ((iteration - 28) % 101 == 0) {
-                file.appendText("\nIteration: $iteration \n")
+                file.appendText("\nIteration: ${iteration + 1} \n")
             }
             robots = robots
                 .map { robot -> advanceInTime(robot, 1) }
