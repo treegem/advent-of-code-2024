@@ -4,10 +4,13 @@ package de.gbrown.aoc2024
 
 import de.gbrown.aoc2024.util.Position
 import de.gbrown.aoc2024.util.Velocity
-import de.gbrown.aoc2024.util.checkOnTestInput
 import de.gbrown.aoc2024.util.solve
+import java.io.File
 
 object Day14 {
+
+    const val WIDTH = 101
+    const val HEIGHT = 103
 
     fun part1(input: List<String>, width: Int, height: Int): Int {
         val robots = input.map { Robot.from(it) }
@@ -23,7 +26,28 @@ object Day14 {
             .reduce(Int::times)
     }
 
-    fun part2(input: List<String>): Int = TODO("Must process $input")
+    fun part2(input: List<String>): Int {
+        var robots = input.map { Robot.from(it) }
+        val file = File("test.txt")
+        file.writeText("")
+        repeat(10000) { iteration ->
+            if ((iteration - 28) % 101 == 0) {
+                file.appendText("\nIteration: $iteration \n")
+            }
+            robots = robots
+                .map { robot -> advanceInTime(robot, 1) }
+                .map { robot -> Robot(restrainToBoundaries(robot.position, WIDTH, HEIGHT), robot.velocity) }
+            if ((iteration - 28) % 101 == 0) {
+                robots.map { it.position }
+                    .toStringList(WIDTH, HEIGHT)
+                    .map {
+                        file.appendText("$it\n")
+                    }
+                file.appendText("\n")
+            }
+        }
+        return 0
+    }
 
     private fun advanceInTime(robot: Robot, seconds: Int): Robot = Robot(
         robot.position.moved(robot.velocity * seconds),
@@ -49,6 +73,17 @@ object Day14 {
 
         return listOf(firstQuadrant, secondQuadrant, thirdQuadrant, fourthQuadrant)
     }
+
+    private fun List<Position>.toStringList(width: Int, height: Int): List<String> {
+        val resultList = mutableListOf<String>()
+        (0 until height).forEach { y ->
+            val row = (0 until width).joinToString("") { x ->
+                if (Position(x, y) in this) "#" else "."
+            }
+            resultList.add(row)
+        }
+        return resultList
+    }
 }
 
 private data class Robot(val position: Position, val velocity: Velocity) {
@@ -70,11 +105,10 @@ fun main() {
 
     val day = 14
 
-    println("\nPart 1:")
-    checkOnTestInput(day, 12, { Day14.part1(it, 11, 7) })
-    solve(day) { Day14.part1(it, 101, 103) }
+//    println("\nPart 1:")
+//    checkOnTestInput(day, 12, { Day14.part1(it, 11, 7) })
+//    solve(day) { Day14.part1(it, WIDTH, HEIGHT) }
 
     println("\nPart2:")
-    checkOnTestInput(day, 0, Day14::part2)
     solve(day, Day14::part2)
 }
