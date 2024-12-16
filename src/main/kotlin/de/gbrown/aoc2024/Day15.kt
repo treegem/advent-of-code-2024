@@ -8,6 +8,7 @@ import de.gbrown.aoc2024.util.Position
 import de.gbrown.aoc2024.util.checkOnTestInput
 import de.gbrown.aoc2024.util.findAllPositionsByPredicate
 import de.gbrown.aoc2024.util.findValueAt
+import de.gbrown.aoc2024.util.solve
 import de.gbrown.aoc2024.util.to2dCharsListMatrix
 
 object Day15 {
@@ -39,7 +40,6 @@ object Day15 {
     }
 
     fun part2(input: List<String>): Long {
-//        val widenedInput = input
         val widenedInput = input.map { it.widenTiles() }
         val tileMap: List<MutableList<WideTileType>> = widenedInput.toWideTileMap()
 
@@ -48,11 +48,13 @@ object Day15 {
         val directionCommands = extractDirectionCommands(input)
 
         directionCommands.forEach { direction ->
-            val didMoveSuccessFully = pushWithWideBoxes(robotPosition, direction, tileMap)
-            if (didMoveSuccessFully) {
+            val (canMove, operations) = pushWithWideBoxes(robotPosition, direction, tileMap)
+            if (canMove) {
                 robotPosition = robotPosition.moved(direction)
+                operations.toSet().forEach { (position, tile) ->
+                    tileMap[position.y][position.x] = tile
+                }
             }
-            tileMap.printWithRobot(robotPosition)
         }
 
         return tileMap
@@ -128,67 +130,93 @@ object Day15 {
         forceOriginPosition: Position,
         forceDirection: Direction,
         tileMap: List<MutableList<WideTileType>>,
-    ): Boolean {
+    ): Pair<Boolean, List<Pair<Position, WideTileType>>> {
         val pushedPosition = forceOriginPosition.moved(forceDirection)
         val nextTile = tileMap.findValueAt(pushedPosition)!!
-        val canMoveToNextTile = when (nextTile) {
-            WideTileType.WALL -> false
-            WideTileType.BOX_LEFT -> {
-                if (forceDirection.isVertical()) {
-                    pushWithWideBoxes(
-                        forceOriginPosition = pushedPosition,
-                        forceDirection = forceDirection,
-                        tileMap = tileMap
-                    )
-                            && pushWithWideBoxes(
-                        forceOriginPosition = pushedPosition.moved(Direction.RIGHT),
-                        forceDirection = forceDirection,
-                        tileMap = tileMap
-                    )
-                } else pushWithWideBoxes(pushedPosition, forceDirection, tileMap)
-            }
 
-            WideTileType.BOX_RIGHT -> {
-                if (forceDirection.isVertical()) {
-                    pushWithWideBoxes(
-                        forceOriginPosition = pushedPosition,
-                        forceDirection = forceDirection,
-                        tileMap = tileMap
-                    )
-                            && pushWithWideBoxes(
-                        forceOriginPosition = pushedPosition.moved(Direction.LEFT),
-                        forceDirection = forceDirection,
-                        tileMap = tileMap
-                    )
-                } else pushWithWideBoxes(pushedPosition, forceDirection, tileMap)
-            }
+        val (canMoveToNextTile: Boolean, previousOperations: List<Pair<Position, WideTileType>>) = calculateMove(
+            nextTile = nextTile,
+            forceDirection = forceDirection,
+            pushedPosition = pushedPosition,
+            tileMap = tileMap
+        )
 
-            WideTileType.EMPTY -> true
-        }
-        val operations = mutableListOf<Pair<Position, WideTileType>>()
-        if (canMoveToNextTile) {
-            if (nextTile == WideTileType.BOX_LEFT) {
-                if (forceDirection.isVertical()) {
-                    val boxRightCurrentPosition = pushedPosition.moved(Direction.RIGHT)
-                    val boxRightTargetPosition = boxRightCurrentPosition.moved(forceDirection)
-                    tileMap[boxRightCurrentPosition.y][boxRightCurrentPosition.x] = WideTileType.EMPTY
-                    tileMap[boxRightTargetPosition.y][boxRightTargetPosition.x] = WideTileType.BOX_RIGHT
-                }
-                val boxLeftTargetPosition = pushedPosition.moved(forceDirection)
-                tileMap[boxLeftTargetPosition.y][boxLeftTargetPosition.x] = WideTileType.BOX_LEFT
-            } else if (nextTile == WideTileType.BOX_RIGHT) {
-                if (forceDirection.isVertical()) {
-                    val boxLeftCurrentPosition = pushedPosition.moved(Direction.LEFT)
-                    tileMap[boxLeftCurrentPosition.y][boxLeftCurrentPosition.x] = WideTileType.EMPTY
-                    val boxLeftTargetPosition = boxLeftCurrentPosition.moved(forceDirection)
-                    tileMap[boxLeftTargetPosition.y][boxLeftTargetPosition.x] = WideTileType.BOX_LEFT
-                }
-                val boxRightTargetPosition = pushedPosition.moved(forceDirection)
-                tileMap[boxRightTargetPosition.y][boxRightTargetPosition.x] = WideTileType.BOX_RIGHT
+        val newOperations = if (canMoveToNextTile) {
+            calculateRequiredOperations(nextTile, forceDirection, pushedPosition)
+        } else emptyList()
+
+        return canMoveToNextTile to previousOperations + newOperations
+    }
+
+    private fun calculateRequiredOperations(
+        nextTile: WideTileType,
+        forceDirection: Direction,
+        pushedPosition: Position,
+    ): List<Pair<Position, WideTileType>> {
+        val newOperations = mutableListOf<Pair<Position, WideTileType>>()
+        if (nextTile == WideTileType.BOX_LEFT) {
+            if (forceDirection.isVertical()) {
+                val boxRightCurrentPosition = pushedPosition.moved(Direction.RIGHT)
+                val boxRightTargetPosition = boxRightCurrentPosition.moved(forceDirection)
+                newOperations.add(boxRightCurrentPosition to WideTileType.EMPTY)
+                newOperations.add(boxRightTargetPosition to WideTileType.BOX_RIGHT)
             }
-            tileMap[pushedPosition.y][pushedPosition.x] = WideTileType.EMPTY
+            val boxLeftTargetPosition = pushedPosition.moved(forceDirection)
+            newOperations.add(boxLeftTargetPosition to WideTileType.BOX_LEFT)
+        } else if (nextTile == WideTileType.BOX_RIGHT) {
+            if (forceDirection.isVertical()) {
+                val boxLeftCurrentPosition = pushedPosition.moved(Direction.LEFT)
+                val boxLeftTargetPosition = boxLeftCurrentPosition.moved(forceDirection)
+                newOperations.add(boxLeftCurrentPosition to WideTileType.EMPTY)
+                newOperations.add(boxLeftTargetPosition to WideTileType.BOX_LEFT)
+            }
+            val boxRightTargetPosition = pushedPosition.moved(forceDirection)
+            newOperations.add(boxRightTargetPosition to WideTileType.BOX_RIGHT)
         }
-        return canMoveToNextTile
+        newOperations.add(pushedPosition to WideTileType.EMPTY)
+        return newOperations.toList()
+    }
+
+    private fun calculateMove(
+        nextTile: WideTileType,
+        forceDirection: Direction,
+        pushedPosition: Position,
+        tileMap: List<MutableList<WideTileType>>,
+    ) = when (nextTile) {
+        WideTileType.WALL -> false to emptyList()
+        WideTileType.BOX_LEFT -> {
+            if (forceDirection.isVertical()) {
+                val (canMoveLeftBox, leftBoxOperations) = pushWithWideBoxes(
+                    forceOriginPosition = pushedPosition,
+                    forceDirection = forceDirection,
+                    tileMap = tileMap
+                )
+                val (canMoveRightBox, rightBoxOperations) = pushWithWideBoxes(
+                    forceOriginPosition = pushedPosition.moved(Direction.RIGHT),
+                    forceDirection = forceDirection,
+                    tileMap = tileMap
+                )
+                (canMoveLeftBox && canMoveRightBox) to (leftBoxOperations + rightBoxOperations)
+            } else pushWithWideBoxes(pushedPosition, forceDirection, tileMap)
+        }
+
+        WideTileType.BOX_RIGHT -> {
+            if (forceDirection.isVertical()) {
+                val (canPushRightBox, rightBoxOperations) = pushWithWideBoxes(
+                    forceOriginPosition = pushedPosition,
+                    forceDirection = forceDirection,
+                    tileMap = tileMap
+                )
+                val (canPushLeftBox, leftBoxOperations) = pushWithWideBoxes(
+                    forceOriginPosition = pushedPosition.moved(Direction.LEFT),
+                    forceDirection = forceDirection,
+                    tileMap = tileMap
+                )
+                (canPushRightBox && canPushLeftBox) to (rightBoxOperations + leftBoxOperations)
+            } else pushWithWideBoxes(pushedPosition, forceDirection, tileMap)
+        }
+
+        WideTileType.EMPTY -> true to emptyList()
     }
 
     private fun String.widenTiles() = this.map { char ->
@@ -224,13 +252,13 @@ fun main() {
 
     val day = 15
 
-//    println("\nPart 1:")
-//    checkOnTestInput(day, 2028L, Day15::part1, suffix = "_small")
-//    checkOnTestInput(day, 10_092L, Day15::part1, suffix = "_medium")
-//    solve(day, Day15::part1)
+    println("\nPart 1:")
+    checkOnTestInput(day, 2028L, Day15::part1, suffix = "_small")
+    checkOnTestInput(day, 10_092L, Day15::part1, suffix = "_medium")
+    solve(day, Day15::part1)
 
     println("\nPart2:")
     checkOnTestInput(day, 9021L, Day15::part2, suffix = "_medium")
 //    checkOnTestInput(day, 9021L, Day15::part2, suffix = "_georg")
-//    solve(day, Day15::part2)
+    solve(day, Day15::part2)
 }
