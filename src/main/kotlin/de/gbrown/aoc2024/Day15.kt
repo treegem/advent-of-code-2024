@@ -259,6 +259,5 @@ fun main() {
 
     println("\nPart2:")
     checkOnTestInput(day, 9021L, Day15::part2, suffix = "_medium")
-//    checkOnTestInput(day, 9021L, Day15::part2, suffix = "_georg")
     solve(day, Day15::part2)
 }
