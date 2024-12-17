@@ -9,8 +9,8 @@ import java.io.File
 
 object Day14 {
 
-    const val WIDTH = 101
-    const val HEIGHT = 103
+    private const val WIDTH = 101
+    private const val HEIGHT = 103
 
     fun part1(input: List<String>, width: Int, height: Int): Int {
         val robots = input.map { Robot.from(it) }

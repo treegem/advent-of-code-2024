@@ -238,6 +238,7 @@ private enum class WideTileType(val associatedChar: Char) {
     WALL(Day15.WALL), EMPTY(Day15.EMPTY), BOX_LEFT(Day15.BOX_LEFT), BOX_RIGHT(Day15.BOX_RIGHT)
 }
 
+@Suppress("unused")
 private fun List<MutableList<WideTileType>>.printWithRobot(robot: Position) {
     this.mapIndexed { y, line ->
         line.mapIndexed { x, tile ->
