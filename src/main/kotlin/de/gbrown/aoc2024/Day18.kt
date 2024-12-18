@@ -14,18 +14,38 @@ object Day18 {
 
     fun part1Test(input: List<String>): Int = part1Internal(input, 12, 6)
 
+    fun part2(input: List<String>): String = part2Internal(input, 1024, 70)
+
+    fun part2Test(input: List<String>): String = part2Internal(input, 12, 6)
+
     private fun part1Internal(input: List<String>, byteAmount: Int, maxIndex: Int): Int {
         val freePositions = findAllFreePositions(input, byteAmount, maxIndex)
 
-        return calculateMinimumSteps(maxIndex, freePositions)
+        return calculateMinimumSteps(maxIndex, freePositions)!!
     }
 
-    fun part2(input: List<String>): Long = TODO("Must process $input")
+    private fun part2Internal(input: List<String>, safeByteAmount: Int, maxIndex: Int): String {
+        val freePositions = findAllFreePositions(input, safeByteAmount, maxIndex).toMutableList()
+        val remainingCorruptedPositions = input
+            .map { it.split(",") }
+            .map { coordinateStrings -> coordinateStrings.map { it.toInt() } }
+            .map { (x, y) -> Position(x, y) }
+            .takeLast(input.size - safeByteAmount)
+            .toMutableList()
+
+        lateinit var corruptedPosition: Position
+        while (calculateMinimumSteps(maxIndex, freePositions) != null) {
+            corruptedPosition = remainingCorruptedPositions.removeFirst()
+            freePositions.remove(corruptedPosition)
+            println("remaining: ${remainingCorruptedPositions.size}")
+        }
+        return "${corruptedPosition.x},${corruptedPosition.y}"
+    }
 
     private fun calculateMinimumSteps(
         maxIndex: Int,
         freePositions: List<Position>,
-    ): Int {
+    ): Int? {
         val startPosition = Position(0, 0)
         val endPosition = Position(maxIndex, maxIndex)
 
@@ -46,7 +66,7 @@ object Day18 {
             }
             if (currentPosition == endPosition) break
         }
-        val result = distances[endPosition]!!
+        val result = distances[endPosition]
         return result
     }
 
@@ -84,6 +104,6 @@ fun main() {
     solve(day, Day18::part1)
 
     println("\nPart2:")
-    checkOnTestInput(day, 0, Day18::part2)
+    checkOnTestInput(day, "6,1", Day18::part2Test)
     solve(day, Day18::part2)
 }
