@@ -14,8 +14,8 @@ fun readInput(name: String) = Path("src/main/resources/$name.txt").readLines()
  */
 fun checkOnTestInput(
     day: Int,
-    expectedSolution: Number,
-    solution: (List<String>) -> Number,
+    expectedSolution: Any,
+    solution: (List<String>) -> Any,
     suffix: String = "",
 ) {
     val testInput = readInput("Day${day.toPaddedString()}${suffix}_test")
@@ -29,7 +29,7 @@ fun checkOnTestInput(
  */
 fun solve(
     day: Int,
-    solution: (List<String>) -> Number,
+    solution: (List<String>) -> Any,
 ) {
     val input = readInput("Day${day.toPaddedString()}")
 
