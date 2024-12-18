@@ -36,12 +36,13 @@ object Day18 {
         val minCorruptionsToAdd =
             binarySearchMinimumCorruptionsToAdd(remainingCorruptedPositions, maxIndex, freePositions)
         val minAddedCorruptions = remainingCorruptedPositions.take(minCorruptionsToAdd).toSet()
-        val corruptedPosition = if (calculateMinimumSteps(maxIndex, freePositions - minAddedCorruptions) == null) {
-            remainingCorruptedPositions[minCorruptionsToAdd - 1]
-        } else {
-            remainingCorruptedPositions[minCorruptionsToAdd]
-        }
-        return "${corruptedPosition.x},${corruptedPosition.y}"
+        val breakingCorruptedPosition =
+            if (calculateMinimumSteps(maxIndex, freePositions - minAddedCorruptions) == null) {
+                remainingCorruptedPositions[minCorruptionsToAdd - 1]
+            } else {
+                remainingCorruptedPositions[minCorruptionsToAdd]
+            }
+        return "${breakingCorruptedPosition.x},${breakingCorruptedPosition.y}"
     }
 
     private fun binarySearchMinimumCorruptionsToAdd(
