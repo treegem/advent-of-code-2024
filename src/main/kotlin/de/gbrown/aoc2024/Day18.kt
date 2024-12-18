@@ -33,13 +33,36 @@ object Day18 {
             .takeLast(input.size - safeByteAmount)
             .toMutableList()
 
-        lateinit var corruptedPosition: Position
-        while (calculateMinimumSteps(maxIndex, freePositions) != null) {
-            corruptedPosition = remainingCorruptedPositions.removeFirst()
-            freePositions.remove(corruptedPosition)
-            println("remaining: ${remainingCorruptedPositions.size}")
+        val minCorruptionsToAdd =
+            binarySearchMinimumCorruptionsToAdd(remainingCorruptedPositions, maxIndex, freePositions)
+        val minAddedCorruptions = remainingCorruptedPositions.take(minCorruptionsToAdd).toSet()
+        val corruptedPosition = if (calculateMinimumSteps(maxIndex, freePositions - minAddedCorruptions) == null) {
+            remainingCorruptedPositions[minCorruptionsToAdd - 1]
+        } else {
+            remainingCorruptedPositions[minCorruptionsToAdd]
         }
         return "${corruptedPosition.x},${corruptedPosition.y}"
+    }
+
+    private fun binarySearchMinimumCorruptionsToAdd(
+        remainingCorruptedPositions: MutableList<Position>,
+        maxIndex: Int,
+        freePositions: MutableList<Position>,
+    ): Int {
+        var minCorruptionsToAdd = 0
+        var maxCorruptionsToAdd = remainingCorruptedPositions.size
+        var corruptionsToAdd = maxCorruptionsToAdd / 2
+        while (minCorruptionsToAdd < maxCorruptionsToAdd) {
+            val addedCorruptions = remainingCorruptedPositions.take(corruptionsToAdd).toSet()
+            if (calculateMinimumSteps(maxIndex, freePositions - addedCorruptions) == null) {
+                maxCorruptionsToAdd = corruptionsToAdd
+            } else {
+                minCorruptionsToAdd = corruptionsToAdd
+            }
+            if (maxCorruptionsToAdd - minCorruptionsToAdd <= 1) break
+            corruptionsToAdd = minCorruptionsToAdd + (maxCorruptionsToAdd - minCorruptionsToAdd) / 2
+        }
+        return minCorruptionsToAdd
     }
 
     private fun calculateMinimumSteps(
