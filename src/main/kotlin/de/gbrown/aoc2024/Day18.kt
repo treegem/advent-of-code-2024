@@ -2,26 +2,28 @@
 
 package de.gbrown.aoc2024
 
+import de.gbrown.aoc2024.util.Dijkstra
 import de.gbrown.aoc2024.util.Direction
 import de.gbrown.aoc2024.util.Position
 import de.gbrown.aoc2024.util.checkOnTestInput
 import de.gbrown.aoc2024.util.solve
-import java.util.PriorityQueue
 
 object Day18 {
 
-    fun part1(input: List<String>): Int = part1Internal(input, 1024, 70)
+    private val dijkstra = Day18Dijkstra()
 
-    fun part1Test(input: List<String>): Int = part1Internal(input, 12, 6)
+    fun part1(input: List<String>): Long = part1Internal(input, 1024, 70)
+
+    fun part1Test(input: List<String>): Long = part1Internal(input, 12, 6)
 
     fun part2(input: List<String>): String = part2Internal(input, 1024, 70)
 
     fun part2Test(input: List<String>): String = part2Internal(input, 12, 6)
 
-    private fun part1Internal(input: List<String>, byteAmount: Int, maxIndex: Int): Int {
+    private fun part1Internal(input: List<String>, byteAmount: Int, maxIndex: Int): Long {
         val freePositions = findAllFreePositions(input, byteAmount, maxIndex)
 
-        return calculateMinimumSteps(maxIndex, freePositions)!!
+        return dijkstra.calculateShortestDistance(freePositions, Position(0, 0), Position(maxIndex, maxIndex))!!
     }
 
     private fun part2Internal(input: List<String>, safeByteAmount: Int, maxIndex: Int): String {
@@ -36,8 +38,10 @@ object Day18 {
         val minCorruptionsToAdd =
             binarySearchMinimumCorruptionsToAdd(remainingCorruptedPositions, maxIndex, freePositions)
         val minAddedCorruptions = remainingCorruptedPositions.take(minCorruptionsToAdd).toSet()
+        val start = Position(0, 0)
+        val end = Position(maxIndex, maxIndex)
         val breakingCorruptedPosition =
-            if (calculateMinimumSteps(maxIndex, freePositions - minAddedCorruptions) == null) {
+            if (dijkstra.calculateShortestDistance(freePositions - minAddedCorruptions, start, end) == null) {
                 remainingCorruptedPositions[minCorruptionsToAdd - 1]
             } else {
                 remainingCorruptedPositions[minCorruptionsToAdd]
@@ -53,9 +57,11 @@ object Day18 {
         var minCorruptionsToAdd = 0
         var maxCorruptionsToAdd = remainingCorruptedPositions.size
         var corruptionsToAdd = maxCorruptionsToAdd / 2
+        val start = Position(0, 0)
+        val end = Position(maxIndex, maxIndex)
         while (minCorruptionsToAdd < maxCorruptionsToAdd) {
             val addedCorruptions = remainingCorruptedPositions.take(corruptionsToAdd).toSet()
-            if (calculateMinimumSteps(maxIndex, freePositions - addedCorruptions) == null) {
+            if (dijkstra.calculateShortestDistance(freePositions - addedCorruptions, start, end) == null) {
                 maxCorruptionsToAdd = corruptionsToAdd
             } else {
                 minCorruptionsToAdd = corruptionsToAdd
@@ -64,34 +70,6 @@ object Day18 {
             corruptionsToAdd = minCorruptionsToAdd + (maxCorruptionsToAdd - minCorruptionsToAdd) / 2
         }
         return minCorruptionsToAdd
-    }
-
-    private fun calculateMinimumSteps(
-        maxIndex: Int,
-        freePositions: List<Position>,
-    ): Int? {
-        val startPosition = Position(0, 0)
-        val endPosition = Position(maxIndex, maxIndex)
-
-        val distances = mutableMapOf<Position, Int>().withDefault { Int.MAX_VALUE }
-        distances[startPosition] = 0
-
-        val priorityQueue = PriorityQueue<Pair<Position, Int>>(compareBy { it.second })
-        priorityQueue.add(startPosition to 0)
-
-        while (priorityQueue.isNotEmpty()) {
-            val (currentPosition, currentDistance) = priorityQueue.poll()
-            findAllNextNeighbors(currentPosition, freePositions).forEach { neighborPosition ->
-                val totalDistance = currentDistance + 1
-                if (totalDistance < distances.getValue(neighborPosition)) {
-                    distances[neighborPosition] = totalDistance
-                    priorityQueue.add(neighborPosition to totalDistance)
-                }
-            }
-            if (currentPosition == endPosition) break
-        }
-        val result = distances[endPosition]
-        return result
     }
 
     private fun findAllFreePositions(
@@ -113,10 +91,15 @@ object Day18 {
         val freePositions = allGridPositions - corruptedPositions
         return freePositions
     }
+}
 
-    private fun findAllNextNeighbors(position: Position, freePositions: List<Position>) =
-        Direction.nonDiagonals.map { position.moved(it) }
-            .filter { it in freePositions }
+private class Day18Dijkstra : Dijkstra<Position>() {
+
+    override fun distance(from: Position, to: Position): Long = 1
+
+    override fun findNextNodes(currentNode: Position, nodesBetween: List<Position>): List<Position> =
+        Direction.nonDiagonals.map { currentNode.moved(it) }
+            .filter { it in nodesBetween }
 }
 
 fun main() {
@@ -124,7 +107,7 @@ fun main() {
     val day = 18
 
     println("\nPart 1:")
-    checkOnTestInput(day, 22, Day18::part1Test)
+    checkOnTestInput(day, 22L, Day18::part1Test)
     solve(day, Day18::part1)
 
     println("\nPart2:")
