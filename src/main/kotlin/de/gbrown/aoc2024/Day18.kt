@@ -97,9 +97,9 @@ private class Day18Dijkstra : Dijkstra<Position>() {
 
     override fun distance(from: Position, to: Position): Long = 1
 
-    override fun findNextNodes(currentNode: Position, nodesBetween: List<Position>): List<Position> =
+    override fun findNextNodes(currentNode: Position, availableNodes: List<Position>): List<Position> =
         Direction.nonDiagonals.map { currentNode.moved(it) }
-            .filter { it in nodesBetween }
+            .filter { it in availableNodes }
 }
 
 fun main() {
